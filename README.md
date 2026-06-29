@@ -12,10 +12,9 @@ features for receipt parsing and settlement explanations.
 - AI: Groq/Gemini for receipt parsing and settlement explanations
 
 ## Features
-(fill in as built)
+
 
 ## Architecture
-(fill in - mention settlementEngine.js and aiService.js separation)
+
 
 ## Setup Instructions
-(fill in)
