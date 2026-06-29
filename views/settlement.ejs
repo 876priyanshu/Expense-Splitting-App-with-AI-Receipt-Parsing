@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Settlement Results</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-8">
+  <div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
+    <h1 class="text-2xl font-bold mb-4"><%= groupName %> - Settlement</h1>
+
+    <h2 class="text-lg font-semibold mt-6 mb-2">Balances</h2>
+    <ul class="mb-6">
+      <% balances.forEach(b => { %>
+        <li class="flex justify-between border-b py-2">
+          <span><%= b.name %></span>
+          <span class="<%= b.balance >= 0 ? 'text-green-600' : 'text-red-600' %>">
+            <%= b.balance >= 0 ? '+' : '' %><%= b.balance %>
+          </span>
+        </li>
+      <% }) %>
+    </ul>
+
+    <h2 class="text-lg font-semibold mb-2">Settlements Needed</h2>
+    <% if (transactions.length === 0) { %>
+      <p class="text-gray-500">Everyone is settled up!</p>
+    <% } else { %>
+      <ul>
+        <% transactions.forEach(t => { %>
+          <li class="border-b py-2">
+            <span class="font-medium"><%= t.fromName %></span> owes
+            <span class="font-medium"><%= t.toName %></span>
+            <span class="text-blue-600 font-semibold">₹<%= t.amount %></span>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+  </div>
+</body>
+</html>
