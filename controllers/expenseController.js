@@ -1,6 +1,8 @@
 const Expense = require('../models/Expense');
 const Group = require('../models/Group');
 
+const { categorizeExpense } = require('../services/aiService');
+
 const addExpense = async (req, res) => {
   try {
     const { groupId, amount, description } = req.body;
@@ -11,13 +13,16 @@ const addExpense = async (req, res) => {
     const isMember = group.members.some(m => m.toString() === req.user.id);
     if (!isMember) return res.status(403).json({ message: 'Not a member of this group' });
 
-    // Equal split among all group members
+    // Categorize the expense using AI - non-blocking failure (defaults handled inside)
+    const category = await categorizeExpense(description);
+
     const expense = await Expense.create({
       group: groupId,
       paidBy: req.user.id,
       amount,
       description,
       splitAmong: group.members,
+      category,
     });
 
     res.status(201).json({ message: 'Expense added', expense });
