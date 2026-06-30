@@ -32,13 +32,14 @@ features for expense categorization, settlement explanations, and spending insig
 1. Clone the repo
 2. Run `npm install`
 3. Create a `.env` file with:
- PORT=5000
-MONGO_URI=mongodb://root:priyanshu@ac-599a3yi-shard-00-00.7oh2hlk.mongodb.net:27017,ac-599a3yi-shard-00-01.7oh2hlk.mongodb.net:27017,ac-599a3yi-shard-00-02.7oh2hlk.mongodb.net:27017/?ssl=true&replicaSet=atlas-61o74z-shard-0&authSource=admin&appName=backend
-JWT_SECRET=myRandomSecretKey12345SplitwiseAI
-GROQ_API_KEY=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
+4. PORT=5000
+MONGO_URI=your_mongo_uri
+JWT_SECRET=your_secret_key
+GROQ_API_KEY=\your_key
+ 
 
-4. Run `npm run dev`
-5. Visit `http://localhost:5000/login`
+6. Run `npm run dev`
+7. Visit `http://localhost:5000/login`
 
 ## Settlement Algorithm
 Given a set of expenses, the system calculates each user's net balance
