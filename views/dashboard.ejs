@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard - SplitWise AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-indigo-50 via-white to-purple-50 min-h-screen p-6">
+  <div class="max-w-xl mx-auto">
+
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold text-gray-800">Your Groups</h1>
+      <p class="text-gray-400 text-sm mt-1">Manage your shared expenses</p>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-md border border-gray-100 p-6 mb-6">
+      <h2 class="text-gray-500 text-sm font-semibold uppercase tracking-wide mb-3">Create New Group</h2>
+      <form action="/dashboard/create-group" method="POST" class="flex gap-3">
+        <input type="hidden" name="userId" value="<%= userId %>">
+        <input type="text" name="name" required placeholder="Group name e.g. Goa Trip"
+          class="flex-1 border border-gray-200 rounded-lg px-4 py-2.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <button type="submit"
+          class="bg-indigo-600 text-white font-medium px-5 py-2.5 rounded-lg hover:bg-indigo-700 transition">
+          Create
+        </button>
+      </form>
+    </div>
+
+    <div class="space-y-3">
+      <% if (groups.length === 0) { %>
+        <div class="bg-white rounded-2xl shadow-md border border-gray-100 p-8 text-center">
+          <p class="text-gray-400">No groups yet — create one above to get started.</p>
+        </div>
+      <% } else { %>
+        <% groups.forEach(g => { %>
+          <a href="/settlement/<%= g._id %>"
+            class="block bg-white rounded-2xl shadow-md border border-gray-100 p-5 hover:shadow-lg hover:border-indigo-200 transition">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-gray-800 font-semibold"><%= g.name %></h3>
+                <p class="text-gray-400 text-sm mt-1"><%= g.members.length %> member<%= g.members.length !== 1 ? 's' : '' %></p>
+              </div>
+              <span class="text-indigo-600">→</span>
+            </div>
+          </a>
+        <% }) %>
+      <% } %>
+    </div>
+
+  </div>
+</body>
+</html>

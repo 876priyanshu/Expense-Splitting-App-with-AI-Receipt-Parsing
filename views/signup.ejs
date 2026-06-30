@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>SplitWise AI - Login</title>
+  <title>SplitWise AI - Sign Up</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gradient-to-br from-indigo-50 via-white to-purple-50 min-h-screen flex items-center justify-center px-4">
@@ -12,8 +12,8 @@
       <div class="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-md">
         <span class="text-white text-2xl font-bold">₹</span>
       </div>
-      <h1 class="text-2xl font-bold text-gray-800">SplitWise AI</h1>
-      <p class="text-gray-400 text-sm mt-1">Split smarter, settle faster</p>
+      <h1 class="text-2xl font-bold text-gray-800">Create your account</h1>
+      <p class="text-gray-400 text-sm mt-1">Start splitting expenses smartly</p>
     </div>
 
     <% if (error) { %>
@@ -22,7 +22,12 @@
       </div>
     <% } %>
 
-    <form action="/login" method="POST" class="space-y-4">
+    <form action="/signup" method="POST" class="space-y-4">
+      <div>
+        <label class="block text-gray-600 text-sm font-medium mb-1">Name</label>
+        <input type="text" name="name" required placeholder="Your name"
+          class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition">
+      </div>
       <div>
         <label class="block text-gray-600 text-sm font-medium mb-1">Email</label>
         <input type="email" name="email" required placeholder="you@example.com"
@@ -35,12 +40,12 @@
       </div>
       <button type="submit"
         class="w-full bg-indigo-600 text-white font-medium py-2.5 rounded-lg hover:bg-indigo-700 active:scale-[0.98] transition-all shadow-sm">
-        Log in
+        Sign up
       </button>
     </form>
 
     <p class="text-center text-sm text-gray-400 mt-6">
-      No account? <a href="/signup" class="text-indigo-600 font-medium hover:underline">Sign up</a>
+      Already have an account? <a href="/login" class="text-indigo-600 font-medium hover:underline">Log in</a>
     </p>
   </div>
 </body>
