@@ -7,6 +7,8 @@ const { generateSettlement } = require('../services/settlementEngine');
 const bcrypt = require('bcryptjs');
 const { explainSettlement, generateSpendingInsights, categorizeExpense } = require('../services/aiService');
 const axios = require('axios');
+const { logActivity } = require('../services/activityLogger');
+
 
 router.post('/settlement/:groupId/remove-member', async (req, res) => {
   try {
@@ -22,17 +24,27 @@ router.post('/settlement/:groupId/remove-member', async (req, res) => {
 
     const memberBalance = balances[userId];
     if (memberBalance && Math.abs(memberBalance) > 0.01) {
-      return res.send(`Cannot remove member — they have an unsettled balance of ₹${Math.abs(memberBalance).toFixed(2)}. Settle all debts first.`);
+      return res.send(`Cannot remove member — unsettled balance of ₹${Math.abs(memberBalance).toFixed(2)}.`);
     }
 
+    const removedUser = await User.findById(userId);
     group.members = group.members.filter(m => m.toString() !== userId);
     await group.save();
+
+    await logActivity(
+      req.params.groupId,
+      req.body.userId,
+      'member_removed',
+      `${removedUser.name} was removed from the group`
+    );
 
     res.redirect(`/settlement/${req.params.groupId}`);
   } catch (err) {
     res.send('Error removing member: ' + err.message);
   }
 });
+
+
 router.get('/login', (req, res) => {
   res.render('login', { error: null });
 });
@@ -125,6 +137,18 @@ router.get('/settlement/:groupId', async (req, res) => {
     const aiSummary = await explainSettlement(transactionsWithNames, group.name);
     const spendingInsights = await generateSpendingInsights(expenses, group.name);
 
+    const ActivityLog = require('../models/ActivityLog');
+    const logs = await ActivityLog.find({ group: req.params.groupId })
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .populate('actor', 'name');
+
+    const activityFeed = logs.map(log => ({
+      actorName: log.actor?.name || 'Someone',
+      details: log.details,
+      timeAgo: getTimeAgo(log.createdAt),
+    }));
+
     res.render('settlement', {
       groupName: group.name,
       groupId: req.params.groupId,
@@ -134,11 +158,24 @@ router.get('/settlement/:groupId', async (req, res) => {
       aiSummary,
       spendingInsights,
       expenses: expensesWithDetails,
+      activityFeed,
     });
   } catch (err) {
     res.send('Error loading settlement: ' + err.message);
   }
 });
+
+// Simple helper to convert a timestamp into "2 mins ago" style text
+function getTimeAgo(date) {
+  const seconds = Math.floor((new Date() - date) / 1000);
+  if (seconds < 60) return 'just now';
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} min${minutes !== 1 ? 's' : ''} ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+  const days = Math.floor(hours / 24);
+  return `${days} day${days !== 1 ? 's' : ''} ago`;
+}
 
 router.post('/settlement/:groupId/add-member', async (req, res) => {
   try {
@@ -149,6 +186,13 @@ router.post('/settlement/:groupId/add-member', async (req, res) => {
     if (userToAdd && !group.members.some(m => m.toString() === userToAdd._id.toString())) {
       group.members.push(userToAdd._id);
       await group.save();
+
+      await logActivity(
+        req.params.groupId,
+        userToAdd._id,
+        'member_added',
+        `${userToAdd.name} joined the group`
+      );
     }
 
     res.redirect(`/settlement/${req.params.groupId}`);
@@ -164,7 +208,7 @@ router.post('/settlement/:groupId/add-expense', async (req, res) => {
 
     const category = await categorizeExpense(description);
 
-    await Expense.create({
+    const expense = await Expense.create({
       group: req.params.groupId,
       paidBy,
       amount: Number(amount),
@@ -172,6 +216,14 @@ router.post('/settlement/:groupId/add-expense', async (req, res) => {
       splitAmong: group.members,
       category,
     });
+
+    const payerUser = group.members.find(m => m.toString() === paidBy);
+    await logActivity(
+      req.params.groupId,
+      paidBy,
+      'expense_added',
+      `Added "${description}" — ₹${amount}`
+    );
 
     res.redirect(`/settlement/${req.params.groupId}`);
   } catch (err) {
