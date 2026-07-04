@@ -72,7 +72,46 @@ const addMember = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
+const removeMember = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const group = await Group.findById(req.params.id);
+    if (!group) return res.status(404).json({ message: 'Group not found' });
 
-module.exports = { createGroup, getMyGroups, getGroupById, addMember };
+    // Only group creator can remove members
+    if (group.createdBy.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Only group creator can remove members' });
+    }
+
+    // Can't remove yourself (creator)
+    if (userId === req.user.id) {
+      return res.status(400).json({ message: 'Creator cannot be removed from the group' });
+    }
+
+    // Check if member has unsettled balance
+    const Expense = require('../models/Expense');
+    const { calculateNetBalances } = require('../services/settlementEngine');
+
+    const expenses = await Expense.find({ group: req.params.id });
+    const balances = calculateNetBalances(expenses, group.members);
+
+    const memberBalance = balances[userId];
+    if (memberBalance && Math.abs(memberBalance) > 0.01) {
+      return res.status(400).json({
+        message: `Cannot remove member with unsettled balance of ₹${Math.abs(memberBalance).toFixed(2)}. Settle all debts first.`,
+        balance: memberBalance,
+      });
+    }
+
+    // Safe to remove
+    group.members = group.members.filter(m => m.toString() !== userId);
+    await group.save();
+
+    res.status(200).json({ message: 'Member removed successfully', group });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+module.exports = { createGroup, getMyGroups, getGroupById, addMember, removeMember };
 
 // module.exports = { createGroup, getMyGroups, getGroupById };

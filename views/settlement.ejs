@@ -5,68 +5,92 @@
   <title>Settlement Results</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gradient-to-br from-indigo-50 via-white to-purple-50 min-h-screen p-6">
+<body class="bg-gray-50 min-h-screen p-6">
   <div class="max-w-xl mx-auto">
 
-    <div class="mb-6">
-      <p class="text-indigo-600 text-sm font-medium mb-1">Group Settlement</p>
-      <h1 class="text-3xl font-bold text-gray-800"><%= groupName %></h1>
+    <h1 class="text-2xl font-bold text-gray-800 mb-6"><%= groupName %></h1>
+
+    <div class="bg-blue-50 border-l-4 border-blue-500 rounded p-4 mb-5">
+      <p class="text-blue-700 text-xs font-semibold uppercase mb-1">AI Summary</p>
+      <p class="text-gray-700 text-sm"><%= aiSummary %></p>
     </div>
 
-    <div class="bg-indigo-600 rounded-2xl shadow-md p-5 mb-6">
-      <span class="text-indigo-200 text-xs font-semibold uppercase tracking-wide">AI Summary</span>
-      <p class="text-white text-base leading-relaxed mt-2"><%= aiSummary %></p>
+    <div class="bg-purple-50 border-l-4 border-purple-500 rounded p-4 mb-6">
+      <p class="text-purple-700 text-xs font-semibold uppercase mb-1">Spending Insights</p>
+      <p class="text-gray-700 text-sm"><%= spendingInsights %></p>
     </div>
-    <div class="bg-white rounded-2xl shadow-md border border-gray-100 p-6 mb-6">
-  <h2 class="text-gray-500 text-sm font-semibold uppercase tracking-wide mb-3">Add Expense</h2>
-  <form action="/settlement/<%= groupId %>/add-expense" method="POST" class="space-y-3">
-    <input type="text" name="description" required placeholder="What was it for? e.g. Dinner"
-      class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-    <div class="flex gap-3">
-      <input type="number" name="amount" required placeholder="Amount" min="1"
-        class="flex-1 border border-gray-200 rounded-lg px-4 py-2.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-      <select name="paidBy" required
-        class="flex-1 border border-gray-200 rounded-lg px-4 py-2.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5 mb-5">
+      <h2 class="text-gray-800 text-sm font-semibold mb-3">Add Expense</h2>
+      <form action="/settlement/<%= groupId %>/add-expense" method="POST" class="space-y-3">
+        <input type="text" name="description" required placeholder="Description e.g. Dinner"
+          class="w-full border border-gray-300 rounded px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500">
+        <div class="flex gap-2">
+          <input type="number" name="amount" required placeholder="Amount" min="1"
+            class="flex-1 border border-gray-300 rounded px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500">
+          <select name="paidBy" required
+            class="flex-1 border border-gray-300 rounded px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500">
+            <% members.forEach(m => { %>
+              <option value="<%= m._id %>"><%= m.name %></option>
+            <% }) %>
+          </select>
+        </div>
+        <button type="submit"
+          class="w-full bg-blue-600 text-white font-medium py-2 rounded hover:bg-blue-700 transition">
+          Add Expense
+        </button>
+      </form>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5 mb-5">
+      <h2 class="text-gray-800 text-sm font-semibold mb-3">Add Member</h2>
+      <form action="/settlement/<%= groupId %>/add-member" method="POST" class="flex gap-2">
+        <input type="email" name="email" required placeholder="Member's email"
+          class="flex-1 border border-gray-300 rounded px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500">
+        <button type="submit"
+          class="bg-gray-700 text-white font-medium px-4 py-2 rounded hover:bg-gray-800 transition">
+          Add
+        </button>
+      </form>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5 mb-5">
+      <h2 class="text-gray-800 text-sm font-semibold mb-3">Members</h2>
+      <div class="space-y-2 mb-4">
         <% members.forEach(m => { %>
-          <option value="<%= m._id %>"><%= m.name %></option>
-        <% }) %>
-      </select>
-    </div>
-    <button type="submit"
-      class="w-full bg-indigo-600 text-white font-medium py-2.5 rounded-lg hover:bg-indigo-700 transition">
-      Add Expense
-    </button>
-  </form>
-</div>
-
-<div class="bg-white rounded-2xl shadow-md border border-gray-100 p-6 mb-6">
-  <h2 class="text-gray-500 text-sm font-semibold uppercase tracking-wide mb-3">Add Member</h2>
-  <form action="/settlement/<%= groupId %>/add-member" method="POST" class="flex gap-3">
-    <input type="email" name="email" required placeholder="Member's email"
-      class="flex-1 border border-gray-200 rounded-lg px-4 py-2.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-    <button type="submit"
-      class="bg-gray-800 text-white font-medium px-5 py-2.5 rounded-lg hover:bg-gray-900 transition">
-      Add
-    </button>
-  </form>
-</div>
-    <div class="bg-white rounded-2xl shadow-md border border-gray-100 p-6 mb-6">
-      <h2 class="text-gray-500 text-sm font-semibold uppercase tracking-wide mb-3">Spending Insights</h2>
-      <p class="text-gray-600 text-sm leading-relaxed"><%= spendingInsights %></p>
-    </div>
-
-    <div class="bg-white rounded-2xl shadow-md border border-gray-100 p-6 mb-6">
-      <h2 class="text-gray-500 text-sm font-semibold uppercase tracking-wide mb-4">Expenses</h2>
-      <div class="space-y-3">
-        <% expenses.forEach(e => { %>
           <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-semibold">
+                <%= m.name.charAt(0).toUpperCase() %>
+              </div>
+              <span class="text-gray-700 text-sm"><%= m.name %></span>
+            </div>
+            <form action="/settlement/<%= groupId %>/remove-member" method="POST">
+              <input type="hidden" name="userId" value="<%= m._id %>">
+              <input type="hidden" name="_method" value="DELETE">
+              <button type="submit"
+                class="text-red-500 text-xs hover:underline"
+                onclick="return confirm('Remove <%= m.name %> from group?')">
+                Remove
+              </button>
+            </form>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5 mb-5">
+      <h2 class="text-gray-800 text-sm font-semibold mb-3">Expenses</h2>
+      <div class="space-y-1">
+        <% expenses.forEach(e => { %>
+          <div class="flex items-center justify-between py-2.5 border-b border-gray-100 last:border-0">
             <div>
-              <p class="text-gray-700 font-medium"><%= e.description %></p>
+              <p class="text-gray-800 text-sm font-medium"><%= e.description %></p>
               <p class="text-gray-400 text-xs">Paid by <%= e.paidBy %></p>
             </div>
             <div class="text-right">
-              <p class="text-gray-800 font-semibold">₹<%= e.amount %></p>
-              <span class="inline-block bg-indigo-50 text-indigo-600 text-xs font-medium px-2 py-0.5 rounded-full mt-1">
+              <p class="text-gray-800 text-sm font-semibold">₹<%= e.amount %></p>
+              <span class="inline-block bg-amber-50 text-amber-700 text-xs font-medium px-2 py-0.5 rounded mt-0.5">
                 <%= e.category %>
               </span>
             </div>
@@ -75,18 +99,13 @@
       </div>
     </div>
 
-    <div class="bg-white rounded-2xl shadow-md border border-gray-100 p-6 mb-6">
-      <h2 class="text-gray-500 text-sm font-semibold uppercase tracking-wide mb-4">Balances</h2>
-      <div class="space-y-3">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5 mb-5">
+      <h2 class="text-gray-800 text-sm font-semibold mb-3">Balances</h2>
+      <div class="space-y-1">
         <% balances.forEach(b => { %>
-          <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-semibold text-sm">
-                <%= b.name.charAt(0).toUpperCase() %>
-              </div>
-              <span class="text-gray-700 font-medium"><%= b.name %></span>
-            </div>
-            <span class="font-semibold <%= b.balance >= 0 ? 'text-emerald-600' : 'text-rose-500' %>">
+          <div class="flex items-center justify-between py-2.5 border-b border-gray-100 last:border-0">
+            <span class="text-gray-700 text-sm font-medium"><%= b.name %></span>
+            <span class="text-sm font-semibold <%= b.balance >= 0 ? 'text-green-600' : 'text-red-500' %>">
               <%= b.balance >= 0 ? '+₹' : '-₹' %><%= Math.abs(b.balance) %>
             </span>
           </div>
@@ -94,23 +113,16 @@
       </div>
     </div>
 
-    <div class="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
-      <h2 class="text-gray-500 text-sm font-semibold uppercase tracking-wide mb-4">Settlements Needed</h2>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+      <h2 class="text-gray-800 text-sm font-semibold mb-3">Settlements Needed</h2>
       <% if (transactions.length === 0) { %>
-        <div class="text-center py-8">
-          <div class="text-4xl mb-2">✓</div>
-          <p class="text-gray-400">Everyone is settled up!</p>
-        </div>
+        <p class="text-gray-500 text-sm text-center py-4">Everyone is settled up.</p>
       <% } else { %>
-        <div class="space-y-3">
+        <div class="space-y-2">
           <% transactions.forEach(t => { %>
-            <div class="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3">
-              <div class="flex items-center gap-2 text-gray-700">
-                <span class="font-medium"><%= t.fromName %></span>
-                <span class="text-gray-400">→</span>
-                <span class="font-medium"><%= t.toName %></span>
-              </div>
-              <span class="text-indigo-600 font-bold">₹<%= t.amount %></span>
+            <div class="flex items-center justify-between bg-blue-50 rounded px-3 py-2.5 text-sm">
+              <span class="text-gray-700 font-medium"><%= t.fromName %> → <%= t.toName %></span>
+              <span class="text-blue-700 font-semibold">₹<%= t.amount %></span>
             </div>
           <% }) %>
         </div>

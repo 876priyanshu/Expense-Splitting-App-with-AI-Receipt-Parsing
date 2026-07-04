@@ -6,7 +6,33 @@ const Expense = require('../models/Expense');
 const { generateSettlement } = require('../services/settlementEngine');
 const bcrypt = require('bcryptjs');
 const { explainSettlement, generateSpendingInsights, categorizeExpense } = require('../services/aiService');
+const axios = require('axios');
 
+router.post('/settlement/:groupId/remove-member', async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const group = await Group.findById(req.params.groupId);
+    if (!group) return res.send('Group not found');
+
+    const Expense = require('../models/Expense');
+    const { calculateNetBalances } = require('../services/settlementEngine');
+
+    const expenses = await Expense.find({ group: req.params.groupId });
+    const balances = calculateNetBalances(expenses, group.members);
+
+    const memberBalance = balances[userId];
+    if (memberBalance && Math.abs(memberBalance) > 0.01) {
+      return res.send(`Cannot remove member — they have an unsettled balance of ₹${Math.abs(memberBalance).toFixed(2)}. Settle all debts first.`);
+    }
+
+    group.members = group.members.filter(m => m.toString() !== userId);
+    await group.save();
+
+    res.redirect(`/settlement/${req.params.groupId}`);
+  } catch (err) {
+    res.send('Error removing member: ' + err.message);
+  }
+});
 router.get('/login', (req, res) => {
   res.render('login', { error: null });
 });

@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const protect = require('../middleware/auth');
-const { createGroup, getMyGroups, getGroupById, addMember } = require('../controllers/groupController');
+const { createGroup, getMyGroups, getGroupById, addMember, removeMember } = require('../controllers/groupController');
+
+router.delete('/:id/members', protect, removeMember);
 
 router.post('/', protect, createGroup);
 router.get('/', protect, getMyGroups);
