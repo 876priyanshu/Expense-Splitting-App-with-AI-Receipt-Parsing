@@ -67,7 +67,7 @@ Respond with ONLY the category word, nothing else.`;
     return validCategories.includes(category) ? category : 'Other';
   } catch (err) {
     console.error('Categorization failed:', err.message);
-    return 'Uncategorized'; // fallback - never block expense creation
+    return 'Uncategorized'; // fallback -never block expense creation
   }
 };
 const generateSpendingInsights = async (expenses, groupName) => {
