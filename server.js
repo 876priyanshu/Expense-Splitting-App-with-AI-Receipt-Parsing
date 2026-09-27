@@ -16,7 +16,7 @@ const aiLimiter = rateLimit({
   max: 30, // limit each IP to 30 AI-related requests per window
   message: { message: 'Too many AI requests, please try again later.' },
 });
-
+ 
 app.use('/api/insights', aiLimiter);
 
 
