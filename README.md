@@ -1,7 +1,7 @@
 # Expense Splitting App with AI Receipt Parsing
 
 A backend system for splitting group expenses, featuring a debt-simplification
-algorithm to minimize settlement transactions, JWT authentication, and AI-assisted
+algorithm to minimize settlement transactions, JWT authentication, and AI-assisted    
 features for expense categorization, settlement explanations, and spending insights.
 
 ## Features
