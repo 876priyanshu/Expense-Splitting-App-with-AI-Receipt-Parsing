@@ -1,4 +1,4 @@
-// Pure algorithmic logic - no AI, no DB calls. Easy to test independently.
+// Pure algorithmic logic - no AI, no DB calls.Easy to test independently.
 
 function calculateNetBalances(expenses, members) {
   // Initialize everyone's balance to 0

@@ -13,10 +13,10 @@ const rateLimit = require('express-rate-limit');
 const app = express();
 const aiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 30, // limit each IP to 30 AI-related requests per window
+  max: 30, // limit each IP to 30 AI-related requests per window 
   message: { message: 'Too many AI requests, please try again later.' },
 });
-
+ 
 app.use('/api/insights', aiLimiter);
 
 

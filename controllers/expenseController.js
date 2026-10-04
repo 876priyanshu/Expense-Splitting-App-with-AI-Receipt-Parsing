@@ -13,7 +13,7 @@ const addExpense = async (req, res) => {
     const isMember = group.members.some(m => m.toString() === req.user.id);
     if (!isMember) return res.status(403).json({ message: 'Not a member of this group' });
 
-    // Categorize the expense using AI - non-blocking failure (defaults handled inside)
+    // Categorize the expense using AI - non-blocking failure(defaults handled inside)
     const category = await categorizeExpense(description);
 
     const expense = await Expense.create({
