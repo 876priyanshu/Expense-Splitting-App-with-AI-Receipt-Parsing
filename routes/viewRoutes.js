@@ -8,7 +8,7 @@ const bcrypt = require('bcryptjs');
 const { explainSettlement, generateSpendingInsights, categorizeExpense } = require('../services/aiService');
 const axios = require('axios');
 const { logActivity } = require('../services/activityLogger');
-
+const { getCachedSettlement, invalidateSettlementCache } = require('../services/settlementCache');
 
 router.post('/settlement/:groupId/remove-member', async (req, res) => {
   try {
@@ -37,7 +37,7 @@ router.post('/settlement/:groupId/remove-member', async (req, res) => {
       'member_removed',
       `${removedUser.name} was removed from the group`
     );
-
+    await invalidateSettlementCache(req.params.groupId);
     res.redirect(`/settlement/${req.params.groupId}`);
   } catch (err) {
     res.send('Error removing member: ' + err.message);
@@ -111,7 +111,11 @@ router.get('/settlement/:groupId', async (req, res) => {
     if (!group) return res.send('Group not found');
 
     const expenses = await Expense.find({ group: req.params.groupId });
-    const { balances, transactions } = generateSettlement(expenses, group.members.map(m => m._id));
+    const { balances, transactions } = await getCachedSettlement(
+  req.params.groupId,
+  expenses,
+  group.members.map(m => m._id)
+);
 
     const memberMap = {};
     group.members.forEach(m => { memberMap[m._id.toString()] = m.name; });
@@ -195,6 +199,7 @@ router.post('/settlement/:groupId/add-member', async (req, res) => {
       );
     }
 
+    await invalidateSettlementCache(req.params.groupId);
     res.redirect(`/settlement/${req.params.groupId}`);
   } catch (err) {
     res.send('Error adding member: ' + err.message);

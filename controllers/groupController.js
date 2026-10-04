@@ -1,4 +1,6 @@
 const Group = require('../models/Group');
+const { invalidateSettlementCache } = require('../services/settlementCache');
+
 
 const createGroup = async (req, res) => {
   try {
@@ -66,7 +68,7 @@ const addMember = async (req, res) => {
 
     group.members.push(userToAdd._id);
     await group.save();
-
+    await invalidateSettlementCache(req.params.id);
     res.status(200).json({ message: 'Member added', group });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
@@ -106,7 +108,7 @@ const removeMember = async (req, res) => {
     // Safe to remove
     group.members = group.members.filter(m => m.toString() !== userId);
     await group.save();
-
+    await invalidateSettlementCache(req.params.id);
     res.status(200).json({ message: 'Member removed successfully', group });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });

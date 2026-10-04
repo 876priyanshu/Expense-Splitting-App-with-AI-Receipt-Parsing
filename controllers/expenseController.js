@@ -3,6 +3,8 @@ const Group = require('../models/Group');
 
 const { categorizeExpense } = require('../services/aiService');
 
+const { invalidateSettlementCache } = require('../services/settlementCache');
+
 const addExpense = async (req, res) => {
   try {
     const { groupId, amount, description } = req.body;
@@ -11,9 +13,8 @@ const addExpense = async (req, res) => {
     if (!group) return res.status(404).json({ message: 'Group not found' });
 
     const isMember = group.members.some(m => m.toString() === req.user.id);
-    if (!isMember) return res.status(403).json({ message: 'Not a member of this group' });
+    if (!isMember) return res.status(403).json({ message: 'Not a member' });
 
-    // Categorize the expense using AI - non-blocking failure(defaults handled inside)
     const category = await categorizeExpense(description);
 
     const expense = await Expense.create({
@@ -25,11 +26,14 @@ const addExpense = async (req, res) => {
       category,
     });
 
+    await invalidateSettlementCache(groupId); // ← new
+
     res.status(201).json({ message: 'Expense added', expense });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
+
 
 const getGroupExpenses = async (req, res) => {
   try {
