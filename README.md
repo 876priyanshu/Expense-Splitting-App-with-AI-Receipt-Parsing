@@ -13,7 +13,7 @@ features for expense categorization, settlement explanations, and spending insig
 - AI-generated plain-English settlement summaries
 - AI-generated group spending insights
 - Server-rendered frontend (EJS + Tailwind) for live demo, alongside a REST API
-- 
+- Redis-based caching for settlement computation
 
 ## Tech Stack
 - Backend: Node.js, Express.js
