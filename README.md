@@ -2,7 +2,7 @@
 
 A backend system for splitting group expenses, featuring a debt-simplification
 algorithm to minimize settlement transactions, JWT authentication, and AI-assisted    
-features for expense categorization, settlement explanations, and spending insights.
+features for expense categorization, settlement explanations, and spending insights,including Redis-based caching for settlement computation with write-invalidation, reducing repeated-request latency
 
 ## Features
 - JWT-based authentication (signup/login)
@@ -13,6 +13,7 @@ features for expense categorization, settlement explanations, and spending insig
 - AI-generated plain-English settlement summaries
 - AI-generated group spending insights
 - Server-rendered frontend (EJS + Tailwind) for live demo, alongside a REST API
+- 
 
 ## Tech Stack
 - Backend: Node.js, Express.js
