@@ -1,31 +1,54 @@
-// Pure algorithmic logic - no AI, no DB calls so it is easy to test independently.
-
 function calculateNetBalances(expenses, members) {
-  // Initialize everyone's balance to 0
   const balances = {};
-  members.forEach(memberId => {
-    balances[memberId.toString()] = 0;
+  
+  // 1. Force all member IDs to standard strings
+  const memberIds = members.map(m => {
+    if (m._id) return m._id.toString();
+    if (m.id) return m.id.toString();
+    return m.toString();
   });
+  
+  // 2. Initialize everyone to 0
+  memberIds.forEach(id => balances[id] = 0);
 
   expenses.forEach(expense => {
-    const paidBy = expense.paidBy.toString();
-    const splitAmong = expense.splitAmong.map(id => id.toString());
-    const share = expense.amount / splitAmong.length;
+    // 3. Force expense amount to a strict Number (prevents string concatenation math bugs)
+    const amount = Number(expense.amount) || 0;
+    if (amount <= 0) return;
 
-    // The person who paid gets credited the full amount
-    balances[paidBy] += expense.amount;
+    // 4. Force paidBy to standard string
+    let paidBy = '';
+    if (expense.paidBy) {
+      paidBy = expense.paidBy._id ? expense.paidBy._id.toString() : expense.paidBy.toString();
+    }
+    
+    // 5. Default to splitting among EVERYONE if splitAmong is missing from DB
+    let splitAmong = memberIds;
+    if (expense.splitAmong && expense.splitAmong.length > 0) {
+      splitAmong = expense.splitAmong.map(id => {
+        if (id._id) return id._id.toString();
+        if (id.id) return id.id.toString();
+        return id.toString();
+      });
+    }
 
-    // Everyone in the split (including payer) owes their share
+    if (splitAmong.length === 0) return;
+    const share = amount / splitAmong.length;
+
+    // 6. Apply the math
+    if (balances[paidBy] === undefined) balances[paidBy] = 0;
+    balances[paidBy] += amount;
+
     splitAmong.forEach(userId => {
+      if (balances[userId] === undefined) balances[userId] = 0;
       balances[userId] -= share;
     });
   });
 
-  return balances; // positive = owed money, negative = owes money
+  return balances;
 }
 
 function simplifySettlements(balances) {
-  // Convert to array of {userId, balance}, ignore near-zero balances
   const balanceArray = Object.entries(balances)
     .map(([userId, balance]) => ({ userId, balance: Math.round(balance * 100) / 100 }))
     .filter(entry => Math.abs(entry.balance) > 0.01);
@@ -39,7 +62,6 @@ function simplifySettlements(balances) {
   while (i < creditors.length && j < debtors.length) {
     const creditor = creditors[i];
     const debtor = debtors[j];
-
     const amount = Math.min(creditor.balance, -debtor.balance);
 
     transactions.push({

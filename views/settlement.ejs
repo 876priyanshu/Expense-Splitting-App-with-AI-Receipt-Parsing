@@ -2,106 +2,91 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title><%= groupName %> - Settlement Results</title>
+  <title><%= groupName %> - Splitwise</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50 min-h-screen p-6 font-sans">
-  <div class="max-w-6xl mx-auto">
+<body class="bg-slate-50 min-h-screen p-6">
+  <div class="max-w-4xl mx-auto space-y-6">
+    <!-- Back Link -->
+    <a href="/dashboard?userId=<%= members[0] ? members[0]._id : '' %>" class="text-indigo-600 text-sm hover:underline">&larr; Back to Dashboard</a>
     
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8">
-      <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight mb-2 sm:mb-0"><%= groupName %></h1>
-      <a href="/dashboard" class="text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors">
-        &larr; Back to Dashboard
-      </a>
-    </div>
+    <h1 class="text-2xl font-bold text-slate-800"><%= groupName %></h1>
 
-    <!-- Main Grid Layout -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-      
-      <!-- LEFT COLUMN: Actions & Raw Data -->
-      <div class="lg:col-span-7 space-y-6">
-        
-        <!-- Add Expense Card -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 class="text-gray-900 text-lg font-semibold mb-4">Add Expense</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Left Column: Add Expense, Expenses List, Add Member & Member List -->
+      <div class="space-y-6">
+        <!-- Add Expense -->
+        <div class="bg-white rounded-md shadow-sm border border-slate-200 p-5">
+          <h2 class="text-slate-800 text-base font-semibold mb-4 border-b border-slate-100 pb-2">Add Expense</h2>
           <form action="/settlement/<%= groupId %>/add-expense" method="POST" class="space-y-4">
-            <input type="text" name="description" required placeholder="Description e.g. Dinner at Brown Burger"
-              class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow">
-            <div class="flex gap-4">
-              <input type="number" name="amount" required placeholder="Amount (₹)" min="1"
-                class="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow">
-              <select name="paidBy" required
-                class="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow">
-                <option value="" disabled selected>Paid by...</option>
+            <div>
+              <input type="text" name="description" required placeholder="Description (e.g. Dinner, Taxi)"
+                class="w-full border border-slate-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <input type="number" step="0.01" name="amount" required placeholder="Amount (₹)"
+                class="w-full border border-slate-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
+              <select name="paidBy" class="w-full border border-slate-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
                 <% members.forEach(m => { %>
                   <option value="<%= m._id %>"><%= m.name %></option>
                 <% }) %>
               </select>
             </div>
             <button type="submit"
-              class="w-full bg-blue-600 text-white font-semibold py-2.5 rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
+              class="w-full bg-indigo-600 text-white text-sm font-medium py-2 rounded hover:bg-indigo-700 transition">
               Add Expense
             </button>
           </form>
         </div>
 
-        <!-- Expenses List -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 class="text-gray-900 text-lg font-semibold mb-4">Group Expenses</h2>
-          <% if (expenses.length === 0) { %>
-            <p class="text-gray-500 text-sm py-4 text-center border-2 border-dashed border-gray-200 rounded-lg">No expenses logged yet.</p>
-          <% } else { %>
-            <div class="space-y-1">
-              <% expenses.forEach(e => { %>
-                <div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 px-2 rounded transition-colors">
+        <!-- Group Expenses -->
+        <div class="bg-white rounded-md shadow-sm border border-slate-200 p-5">
+          <h2 class="text-slate-800 text-base font-semibold mb-4 border-b border-slate-100 pb-2">Group Expenses</h2>
+          <% if (expenses && expenses.length > 0) { %>
+            <div class="space-y-3 max-h-60 overflow-y-auto pr-1">
+              <% expenses.forEach(exp => { %>
+                <div class="flex justify-between items-center border-b border-slate-50 pb-2">
                   <div>
-                    <p class="text-gray-900 text-sm font-medium"><%= e.description %></p>
-                    <p class="text-gray-500 text-xs mt-0.5">Paid by <span class="font-medium"><%= e.paidBy %></span></p>
+                    <p class="text-sm font-medium text-slate-800"><%= exp.description %></p>
+                    <p class="text-xs text-slate-500">Paid by <%= exp.paidBy %></p>
                   </div>
                   <div class="text-right">
-                    <p class="text-gray-900 text-sm font-bold">₹<%= e.amount %></p>
-                    <span class="inline-block bg-amber-50 text-amber-700 text-[11px] font-semibold px-2.5 py-0.5 rounded-full mt-1 border border-amber-100">
-                      <%= e.category %>
-                    </span>
+                    <p class="text-sm font-semibold text-slate-800">₹<%= exp.amount %></p>
+                    <span class="text-[10px] uppercase bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded"><%= exp.category || 'Other' %></span>
                   </div>
                 </div>
               <% }) %>
             </div>
+          <% } else { %>
+            <p class="text-xs text-slate-500">No expenses recorded yet.</p>
           <% } %>
         </div>
 
-        <!-- Manage Members Setup (2 Columns internally) -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Add Member -->
-          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h2 class="text-gray-900 text-lg font-semibold mb-4">Add Member</h2>
+        <!-- Add Member & Members List Side-by-Side -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Add Member by Name -->
+          <div class="bg-white rounded-md shadow-sm border border-slate-200 p-5">
+            <h2 class="text-slate-800 text-base font-semibold mb-4 border-b border-slate-100 pb-2">Add Member</h2>
             <form action="/settlement/<%= groupId %>/add-member" method="POST" class="flex flex-col gap-3">
-              <input type="email" name="email" required placeholder="Email address"
-                class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-shadow">
+              <input type="text" name="name" required placeholder="Member's name"
+                class="w-full border border-slate-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
               <button type="submit"
-                class="w-full bg-gray-800 text-white font-semibold py-2.5 rounded-lg hover:bg-gray-900 transition-colors shadow-sm">
-                Send Invite
+                class="bg-slate-800 text-white text-sm font-medium py-2 px-4 rounded hover:bg-slate-900 transition">
+                Add Member
               </button>
             </form>
           </div>
 
           <!-- Members List -->
-          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h2 class="text-gray-900 text-lg font-semibold mb-4">Members (<%= members.length %>)</h2>
-            <div class="space-y-1 h-32 overflow-y-auto pr-2">
+          <div class="bg-white rounded-md shadow-sm border border-slate-200 p-5">
+            <h2 class="text-slate-800 text-base font-semibold mb-4 border-b border-slate-100 pb-2">Members (<%= members.length %>)</h2>
+            <div class="space-y-1 max-h-40 overflow-y-auto pr-2">
               <% members.forEach(m => { %>
-                <div class="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
-                  <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold">
-                      <%= m.name.charAt(0).toUpperCase() %>
-                    </div>
-                    <span class="text-gray-800 text-sm font-medium"><%= m.name %></span>
-                  </div>
+                <div class="flex items-center justify-between py-1 border-b border-slate-50 last:border-0">
+                  <span class="text-slate-700 text-sm"><%= m.name %></span>
                   <form action="/settlement/<%= groupId %>/remove-member" method="POST">
                     <input type="hidden" name="userId" value="<%= m._id %>">
-                    <input type="hidden" name="_method" value="DELETE">
-                    <button type="submit" class="text-red-500 text-xs font-medium hover:text-red-700 hover:underline transition-colors" onclick="return confirm('Remove <%= m.name %> from group?')">
+                    <button type="submit" class="text-red-600 text-xs hover:underline" onclick="return confirm('Remove <%= m.name %>?')">
                       Remove
                     </button>
                   </form>
@@ -110,146 +95,79 @@
             </div>
           </div>
         </div>
-
       </div>
 
-      <!-- RIGHT COLUMN: Analytics, Balances, & Activity -->
-      <div class="lg:col-span-5 space-y-6">
-        
-        <!-- AI Summary -->
-        <div class="bg-blue-50 border-l-4 border-blue-500 rounded-xl p-5 shadow-sm">
-          <p class="text-blue-700 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
-            <span>⚡</span> Settlement Summary
-          </p>
-          <p class="text-gray-800 text-sm leading-relaxed font-medium"><%= aiSummary %></p>
+      <!-- Right Column: Summary, AI Insights, Balances, Settling -->
+      <div class="space-y-6">
+        <!-- Settlement Summary Banner -->
+        <div class="bg-slate-900 text-white rounded-md p-4 shadow-sm">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Settlement Summary</h3>
+          <p class="text-sm"><%= aiSummary %></p>
         </div>
 
-        <!-- AI Spending Insights (Interactive) -->
-        <div class="bg-purple-50 border-l-4 border-purple-500 rounded-xl p-5 shadow-sm">
-          <p class="text-purple-700 text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
-            <span>✨</span> AI Spending Insights
-          </p>
-          <div id="insight-box">
-            <button id="generate-insights-btn" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold py-2.5 px-4 rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2">
-              Generate Financial Tip
-            </button>
+        <!-- AI Spending Insights -->
+        <div class="bg-indigo-50 border border-indigo-100 rounded-md p-5 shadow-sm space-y-3">
+          <h3 class="text-indigo-900 text-sm font-bold uppercase tracking-wider">AI Spending Insights</h3>
+          <div class="text-sm text-indigo-950 bg-white p-3 rounded border border-indigo-100">
+            <%= spendingInsights %>
           </div>
         </div>
 
-        <!-- Balances -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 class="text-gray-900 text-lg font-semibold mb-4">Current Balances</h2>
-          <div class="space-y-1">
-            <% balances.forEach(b => { %>
-              <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                <span class="text-gray-800 text-sm font-medium"><%= b.name %></span>
-                <span class="text-sm font-bold <%= b.balance >= 0 ? 'text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md' : 'text-red-600 bg-red-50 px-2 py-1 rounded-md' %>">
-                  <%= b.balance >= 0 ? '+₹' : '-₹' %><%= Math.abs(b.balance) %>
-                </span>
-              </div>
-            <% }) %>
+        <!-- Current Balances -->
+        <div class="bg-white rounded-md shadow-sm border border-slate-200 p-5">
+          <h3 class="text-slate-800 text-base font-semibold mb-3 border-b border-slate-100 pb-2">Current Balances</h3>
+          <div class="space-y-2">
+            <% if (balances && balances.length > 0) { %>
+              <% balances.forEach(b => { %>
+                <div class="flex justify-between items-center text-sm">
+                  <span class="text-slate-700"><%= b.name %></span>
+                  <span class="font-semibold <%= b.balance > 0 ? 'text-emerald-600' : b.balance < 0 ? 'text-rose-600' : 'text-slate-600' %>">
+                    <%= b.balance > 0 ? `+₹${b.balance}` : b.balance < 0 ? `-₹${Math.abs(b.balance)}` : '₹0' %>
+                  </span>
+                </div>
+              <% }) %>
+            <% } else { %>
+              <p class="text-xs text-slate-500">No balances calculated yet.</p>
+            <% } %>
           </div>
         </div>
 
-        <!-- Settlements Needed -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 class="text-gray-900 text-lg font-semibold mb-4">How to Settle Up</h2>
-          <% if (transactions.length === 0) { %>
-            <div class="bg-gray-50 rounded-lg p-4 text-center">
-              <p class="text-gray-500 text-sm font-medium">Everyone is completely settled up! 🎉</p>
-            </div>
-          <% } else { %>
-            <div class="space-y-3">
+        <!-- How to Settle Up -->
+        <div class="bg-white rounded-md shadow-sm border border-slate-200 p-5">
+          <h3 class="text-slate-800 text-base font-semibold mb-3 border-b border-slate-100 pb-2">How to Settle Up</h3>
+          <div class="space-y-2">
+            <% if (transactions && transactions.length > 0) { %>
               <% transactions.forEach(t => { %>
-                <div class="flex items-center justify-between bg-blue-50/50 border border-blue-100 rounded-lg px-4 py-3 text-sm">
-                  <div class="flex items-center gap-2">
-                    <span class="text-gray-900 font-semibold"><%= t.fromName %></span>
-                    <span class="text-gray-400">&rarr;</span>
-                    <span class="text-gray-900 font-semibold"><%= t.toName %></span>
-                  </div>
-                  <span class="text-blue-700 font-bold bg-white px-2 py-1 rounded shadow-sm border border-blue-100">₹<%= t.amount %></span>
+                <div class="flex justify-between items-center text-sm bg-slate-50 p-2 rounded">
+                  <span class="text-slate-700"><%= t.fromName %> &rarr; <%= t.toName %></span>
+                  <span class="font-semibold text-slate-800">₹<%= t.amount %></span>
                 </div>
               <% }) %>
-            </div>
-          <% } %>
+            <% } else { %>
+              <p class="text-xs text-slate-500 text-center py-2">Everyone is completely settled up.</p>
+            <% } %>
+          </div>
         </div>
 
-        <!-- Recent Activity -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 class="text-gray-900 text-lg font-semibold mb-4">Recent Activity</h2>
-          <% if (activityFeed.length === 0) { %>
-            <p class="text-gray-500 text-sm italic">No recent activity.</p>
-          <% } else { %>
-            <div class="space-y-4 relative before:absolute before:inset-0 before:ml-2 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
+        <!-- Recent Activity Feed -->
+        <div class="bg-white rounded-md shadow-sm border border-slate-200 p-5">
+          <h3 class="text-slate-800 text-base font-semibold mb-3 border-b border-slate-100 pb-2">Recent Activity</h3>
+          <div class="space-y-2 max-h-40 overflow-y-auto pr-1">
+            <% if (activityFeed && activityFeed.length > 0) { %>
               <% activityFeed.forEach(log => { %>
-                <div class="relative flex items-center justify-between">
-                  <div class="flex items-center gap-3">
-                    <div class="w-2 h-2 bg-blue-500 rounded-full ring-4 ring-white z-10"></div>
-                    <p class="text-gray-600 text-sm">
-                      <span class="font-bold text-gray-900"><%= log.actorName %></span> <%= log.details %>
-                    </p>
-                  </div>
-                  <span class="text-gray-400 text-xs font-medium whitespace-nowrap ml-4"><%= log.timeAgo %></span>
+                <div class="text-xs border-b border-slate-50 pb-1.5 last:border-0 flex justify-between">
+                  <span class="text-slate-700"><strong><%= log.actorName %></strong> <%= log.details %></span>
+                  <span class="text-slate-400 shrink-0 ml-2"><%= log.timeAgo %></span>
                 </div>
               <% }) %>
-            </div>
-          <% } %>
+            <% } else { %>
+              <p class="text-xs text-slate-500">No recent activity.</p>
+            <% } %>
+          </div>
         </div>
 
       </div>
     </div>
   </div>
-
-  <!-- Interactive AI Insights Script -->
-  <script>
-    document.getElementById('generate-insights-btn').addEventListener('click', async (e) => {
-      const btn = e.target;
-      const box = document.getElementById('insight-box');
-      const groupId = '<%= groupId %>';
-
-      // 1. Set Loading State
-      btn.innerHTML = `
-        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        Analyzing data...
-      `;
-      btn.disabled = true;
-      btn.classList.add('opacity-80', 'cursor-not-allowed');
-
-      try {
-        // 2. Fetch from Backend Route
-        const response = await fetch(`/api/insights/${groupId}`);
-        
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        
-        const data = await response.json();
-        
-        // 3. Inject the text result seamlessly
-        box.innerHTML = `<p class="text-gray-800 text-sm leading-relaxed font-medium animate-pulse-once">${data.insights}</p>`;
-        
-      } catch (err) {
-        console.error(err);
-        box.innerHTML = `
-          <div class="text-red-600 text-sm font-medium flex items-center gap-2">
-            <span>⚠️</span> Failed to load insights. Please try again.
-          </div>`;
-      }
-    });
-  </script>
-  
-  <style>
-    /* Slight fade-in animation for the generated text */
-    @keyframes pulse-once {
-      0% { opacity: 0; transform: translateY(5px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-    .animate-pulse-once {
-      animation: pulse-once 0.4s ease-out forwards;
-    }
-  </style>
 </body>
 </html>

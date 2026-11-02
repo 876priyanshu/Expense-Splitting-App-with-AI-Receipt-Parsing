@@ -16,7 +16,6 @@ router.post('/settlement/:groupId/remove-member', async (req, res) => {
     const group = await Group.findById(req.params.groupId);
     if (!group) return res.send('Group not found');
 
-    const Expense = require('../models/Expense');
     const { calculateNetBalances } = require('../services/settlementEngine');
 
     const expenses = await Expense.find({ group: req.params.groupId });
@@ -35,7 +34,7 @@ router.post('/settlement/:groupId/remove-member', async (req, res) => {
       req.params.groupId,
       req.body.userId,
       'member_removed',
-      `${removedUser.name} was removed from the group`
+      `${removedUser ? removedUser.name : 'User'} was removed from the group`
     );
     await invalidateSettlementCache(req.params.groupId);
     res.redirect(`/settlement/${req.params.groupId}`);
@@ -43,7 +42,6 @@ router.post('/settlement/:groupId/remove-member', async (req, res) => {
     res.send('Error removing member: ' + err.message);
   }
 });
-
 
 router.get('/login', (req, res) => {
   res.render('login', { error: null });
@@ -112,20 +110,23 @@ router.get('/settlement/:groupId', async (req, res) => {
 
     const expenses = await Expense.find({ group: req.params.groupId });
     const { balances, transactions } = await getCachedSettlement(
-  req.params.groupId,
-  expenses,
-  group.members.map(m => m._id)
-);
+      req.params.groupId,
+      expenses,
+      group.members.map(m => m._id)
+    );
 
     const memberMap = {};
     group.members.forEach(m => { memberMap[m._id.toString()] = m.name; });
 
     const balancesWithNames = Object.entries(balances).map(([id, balance]) => ({
+      userId: id,
       name: memberMap[id] || 'Unknown',
       balance: Math.round(balance * 100) / 100,
     }));
 
     const transactionsWithNames = transactions.map(t => ({
+      from: t.from,
+      to: t.to,
       fromName: memberMap[t.from] || 'Unknown',
       toName: memberMap[t.to] || 'Unknown',
       amount: t.amount,
@@ -169,7 +170,6 @@ router.get('/settlement/:groupId', async (req, res) => {
   }
 });
 
-// Simple helper to convert a timestamp into "2 mins ago" style text
 function getTimeAgo(date) {
   const seconds = Math.floor((new Date() - date) / 1000);
   if (seconds < 60) return 'just now';
@@ -181,27 +181,50 @@ function getTimeAgo(date) {
   return `${days} day${days !== 1 ? 's' : ''} ago`;
 }
 
+// ADD MEMBER BY NAME DIRECTLY
 router.post('/settlement/:groupId/add-member', async (req, res) => {
   try {
-    const { email } = req.body;
-    const group = await Group.findById(req.params.groupId);
+    const name = req.body.name ? req.body.name.trim() : '';
+    if (!name) return res.send('Member name is required');
 
-    const userToAdd = await User.findOne({ email });
-    if (userToAdd && !group.members.some(m => m.toString() === userToAdd._id.toString())) {
+    const group = await Group.findById(req.params.groupId);
+    if (!group) return res.send('Group not found');
+
+    // 1. Look up user by name (case-insensitive)
+    let userToAdd = await User.findOne({ name: { $regex: new RegExp(`^${name}$`, 'i') } });
+    
+    // 2. If user doesn't exist, create a lightweight guest profile automatically
+    if (!userToAdd) {
+      const cleanName = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const dummyEmail = `${cleanName}_${Date.now()}@local.split`;
+      const hashedPassword = await bcrypt.hash('password123', 10);
+      userToAdd = await User.create({ name, email: dummyEmail, password: hashedPassword });
+    }
+
+    // 3. Check if they are already in the group
+    const isAlreadyMember = group.members.some(mId => mId.toString() === userToAdd._id.toString());
+
+    if (!isAlreadyMember) {
       group.members.push(userToAdd._id);
       await group.save();
 
-      await logActivity(
-        req.params.groupId,
-        userToAdd._id,
-        'member_added',
-        `${userToAdd.name} joined the group`
-      );
+      try {
+        await logActivity(
+          req.params.groupId,
+          userToAdd._id,
+          'member_added',
+          `${userToAdd.name} joined the group`
+        );
+      } catch (logErr) {
+        console.error('Activity log error (non-fatal):', logErr.message);
+      }
     }
 
+    // 4. Invalidate cache and reload page
     await invalidateSettlementCache(req.params.groupId);
     res.redirect(`/settlement/${req.params.groupId}`);
   } catch (err) {
+    console.error('Add Member Error:', err);
     res.send('Error adding member: ' + err.message);
   }
 });
@@ -213,7 +236,7 @@ router.post('/settlement/:groupId/add-expense', async (req, res) => {
 
     const category = await categorizeExpense(description);
 
-    const expense = await Expense.create({
+    await Expense.create({
       group: req.params.groupId,
       paidBy,
       amount: Number(amount),
@@ -222,7 +245,6 @@ router.post('/settlement/:groupId/add-expense', async (req, res) => {
       category,
     });
 
-    const payerUser = group.members.find(m => m.toString() === paidBy);
     await logActivity(
       req.params.groupId,
       paidBy,
@@ -230,6 +252,7 @@ router.post('/settlement/:groupId/add-expense', async (req, res) => {
       `Added "${description}" — ₹${amount}`
     );
 
+    await invalidateSettlementCache(req.params.groupId);
     res.redirect(`/settlement/${req.params.groupId}`);
   } catch (err) {
     res.send('Error adding expense: ' + err.message);

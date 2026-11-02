@@ -16,11 +16,15 @@ const signup = async (req, res) => {
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-    res.status(201).json({
-      message: 'User created successfully',
-      token,
-      user: { id: user._id, name: user.name, email: user.email },
+    // 1. Set the httpOnly cookie
+ // The absolute most reliable cookie config for local testing
+    res.cookie('token', token, {
+      httpOnly: true,
+      path: '/' // Forces the cookie to be visible to ALL routes, including /api/insights
     });
+
+    res.redirect('/dashboard');
+    
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
@@ -42,11 +46,14 @@ const login = async (req, res) => {
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-    res.status(200).json({
-      message: 'Login successful',
-      token,
-      user: { id: user._id, name: user.name, email: user.email },
+    // The absolute most reliable cookie config for local testing
+    res.cookie('token', token, {
+      httpOnly: true,
+      path: '/' // Forces the cookie to be visible to ALL routes, including /api/insights
     });
+
+    res.redirect('/dashboard');
+
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }

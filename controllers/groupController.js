@@ -51,29 +51,39 @@ const getGroupById = async (req, res) => {
 };
 const addMember = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { name } = req.body; 
     const User = require('../models/User');
 
     const group = await Group.findById(req.params.id);
-    if (!group) return res.status(404).json({ message: 'Group not found' });
+    if (!group) return res.status(404).send('Group not found');
 
     const isMember = group.members.some(m => m.toString() === req.user.id);
-    if (!isMember) return res.status(403).json({ message: 'Not a member of this group' });
+    if (!isMember) return res.status(403).send('Not a member');
 
-    const userToAdd = await User.findOne({ email });
-    if (!userToAdd) return res.status(404).json({ message: 'User with this email not found' });
+    // Create a dummy/guest user to satisfy MongoDB's requirements
+    const dummyEmail = `guest_${Date.now()}_${Math.random().toString(36).substring(7)}@local.split`;
+    const dummyPassword = await require('bcryptjs').hash(Date.now().toString(), 10);
 
-    const alreadyMember = group.members.some(m => m.toString() === userToAdd._id.toString());
-    if (alreadyMember) return res.status(400).json({ message: 'User already in group' });
+    const newUser = await User.create({
+      name: name,
+      email: dummyEmail,
+      password: dummyPassword
+    });
 
-    group.members.push(userToAdd._id);
+    group.members.push(newUser._id);
     await group.save();
+    
+    const { invalidateSettlementCache } = require('../services/settlementCache');
     await invalidateSettlementCache(req.params.id);
-    res.status(200).json({ message: 'Member added', group });
+    
+    // Redirect back to the view so EJS updates instantly
+    res.redirect(`/settlement/${req.params.id}`);
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    console.error("Add Member Error:", err);
+    res.status(500).send('Server error while adding member');
   }
 };
+
 const removeMember = async (req, res) => {
   try {
     const { userId } = req.body;

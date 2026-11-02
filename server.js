@@ -16,9 +16,9 @@ const aiLimiter = rateLimit({
   max: 30, // limit each IP to 30 AI-related requests per window 
   message: { message: 'Too many AI requests, please try again later.' },
 });
- 
+ const cookieParser = require('cookie-parser');
 app.use('/api/insights', aiLimiter);
-
+app.use(cookieParser());
 
 app.set('view engine', 'ejs');
 app.set('views', './views');
@@ -34,7 +34,7 @@ app.use('/api/groups', groupRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/settlements', settlementRoutes);
 app.use('/', viewRoutes);
-app.use('/api/insights', insightsRoutes);
+app.use('/api/insights', require('./routes/insightsRoutes'));;
 app.use(errorHandler);
 
 app.get('/', (req, res) => {
