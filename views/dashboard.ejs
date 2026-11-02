@@ -5,46 +5,58 @@
   <title>Dashboard - SplitWise AI</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50 min-h-screen p-6">
-  <div class="max-w-xl mx-auto">
+<body class="bg-gray-50 min-h-screen p-6 font-sans">
+  <div class="max-w-5xl mx-auto">
 
-    <h1 class="text-2xl font-semibold text-gray-800 mb-1">Your Groups</h1>
-    <p class="text-gray-500 text-sm mb-6">Manage your shared expenses</p>
-
-    <div class="bg-white rounded-md shadow border border-gray-200 p-5 mb-6">
-      <h2 class="text-gray-700 text-sm font-medium mb-3">Create New Group</h2>
-      <form action="/dashboard/create-group" method="POST" class="flex gap-2">
-        <input type="hidden" name="userId" value="<%= userId %>">
-        <input type="text" name="name" required placeholder="Group name e.g. Goa Trip"
-          class="flex-1 border border-gray-300 rounded px-3 py-2 text-gray-700 focus:outline-none focus:border-blue-500">
-        <button type="submit"
-          class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-          Create
-        </button>
-      </form>
+    <div class="mb-8">
+      <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Your Groups</h1>
+      <p class="text-gray-500 text-sm mt-1">Manage your shared expenses</p>
     </div>
 
-    <div class="space-y-2">
-      <% if (groups.length === 0) { %>
-        <div class="bg-white rounded-md shadow border border-gray-200 p-6 text-center text-gray-500">
-          No groups yet — create one above.
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Left Column: Create Group -->
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-6">
+          <h2 class="text-gray-900 text-lg font-semibold mb-4">Create New Group</h2>
+          <form action="/dashboard/create-group" method="POST" class="space-y-4">
+            <input type="hidden" name="userId" value="<%= userId %>">
+            <input type="text" name="name" required placeholder="Group name e.g. Goa Trip"
+              class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow">
+            <button type="submit"
+              class="w-full bg-blue-600 text-white font-semibold py-2.5 rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
+              Create Group
+            </button>
+          </form>
         </div>
-      <% } else { %>
-        <% groups.forEach(g => { %>
-          <a href="/settlement/<%= g._id %>"
-            class="block bg-white rounded-md shadow border border-gray-200 p-4 hover:border-blue-400 transition">
-            <div class="flex items-center justify-between">
-              <div>
-                <h3 class="text-gray-800 font-medium"><%= g.name %></h3>
-                <p class="text-gray-500 text-sm"><%= g.members.length %> member<%= g.members.length !== 1 ? 's' : '' %></p>
-              </div>
-              <span class="text-gray-400">→</span>
-            </div>
-          </a>
-        <% }) %>
-      <% } %>
-    </div>
+      </div>
 
+      <!-- Right Column: Group List -->
+      <div class="lg:col-span-2">
+        <% if (groups.length === 0) { %>
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+            <p class="text-gray-500 font-medium">No groups yet — create one to get started.</p>
+          </div>
+        <% } else { %>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <% groups.forEach(g => { %>
+              <a href="/settlement/<%= g._id %>"
+                class="block bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:border-blue-500 hover:shadow-md transition-all group">
+                <div class="flex items-center justify-between mb-2">
+                  <h3 class="text-gray-900 font-bold text-lg group-hover:text-blue-600 transition-colors"><%= g.name %></h3>
+                  <span class="text-gray-300 group-hover:text-blue-500 transition-colors">&rarr;</span>
+                </div>
+                <p class="text-gray-500 text-sm flex items-center gap-2 font-medium">
+                  <span class="inline-block w-2 h-2 rounded-full bg-emerald-400"></span>
+                  <%= g.members.length %> member<%= g.members.length !== 1 ? 's' : '' %>
+                </p>
+              </a>
+            <% }) %>
+          </div>
+        <% } %>
+      </div>
+
+    </div>
   </div>
 </body>
 </html>
