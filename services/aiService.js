@@ -20,16 +20,16 @@ Write a short, friendly 1-2 sentence summary explaining who needs to pay whom. K
     const response = await axios.post(
       'https://api.groq.com/openai/v1/chat/completions',
       {
-        model: 'llama-3.1-8b-instant',
+        model: 'openai/gpt-oss-20b', // <-- Update this string in all 3 functions
         messages: [{ role: 'user', content: prompt }],
-        max_tokens: 100,
+        max_tokens: 120, // (Keep your existing max_tokens per function)
       },
       {
         headers: {
           'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
           'Content-Type': 'application/json',
         },
-        timeout: 8000, // 8 second timeout, don't let the app hang forever
+        timeout: 8000,
       }
     );
 
@@ -49,7 +49,7 @@ Respond with ONLY the category word, nothing else.`;
     const response = await axios.post(
       'https://api.groq.com/openai/v1/chat/completions',
       {
-        model: 'llama-3.1-8b-instant',
+        model: 'openai/gpt-oss-20b',
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 10,
       },
@@ -98,7 +98,7 @@ Write a short 2-3 sentence insight summary - mention the biggest spending catego
     const response = await axios.post(
       'https://api.groq.com/openai/v1/chat/completions',
       {
-        model: 'llama-3.1-8b-instant',
+        model: 'openai/gpt-oss-20b',
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 120,
       },
